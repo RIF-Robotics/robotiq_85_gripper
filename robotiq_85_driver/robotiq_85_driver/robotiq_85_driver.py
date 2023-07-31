@@ -63,6 +63,7 @@ from sensor_msgs.msg import JointState
 class Robotiq85Driver(Node):
     def __init__(self):
         super().__init__('robotiq_85_driver')
+        self.connected = False
 
         self.declare_parameter('num_grippers', 1)
         self.declare_parameter('comport', '/dev/ttyUSB0')
@@ -71,7 +72,7 @@ class Robotiq85Driver(Node):
         self._num_grippers = self.get_parameter('num_grippers').get_parameter_value().integer_value
         self._comport = self.get_parameter('comport').get_parameter_value().string_value
         self._baud = self.get_parameter('baud').get_parameter_value().string_value
-        
+
         self.get_logger().info("Parameters Num gippers: %i, Comport: %s, Baud rate: %s " % (self._num_grippers, self._comport, self._baud))
 
         self._gripper = Robotiq85Gripper(self._num_grippers, self._comport, self._baud)
@@ -111,8 +112,10 @@ class Robotiq85Driver(Node):
 
         self._last_time = self.get_time()
 
-        # # 100 Hz timer 
+        # 100 Hz timer
         self.timer = self.create_timer(0.01, self._timer_callback)
+
+        self.connected = True
 
     def __del__(self):
         self.shutdown()
@@ -243,7 +246,10 @@ def main(args=None):
     rclpy.init(args=args)
     try:
         node = Robotiq85Driver()
-        rclpy.spin(node)
+        if node.connected:
+            rclpy.spin(node)
+        else:
+            return -1
     except KeyboardInterrupt:
         pass
     except ExternalShutdownException:
@@ -252,9 +258,8 @@ def main(args=None):
         node.destroy_node()
         rclpy.try_shutdown()
 
+    return 0
+
 
 if __name__ == "__main__":
-    main()
-
-
-
+    sys.exit(main())

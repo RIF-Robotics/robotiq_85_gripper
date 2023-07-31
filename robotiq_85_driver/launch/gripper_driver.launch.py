@@ -7,7 +7,9 @@ def generate_launch_description():
     griperdriver_node = Node(package='robotiq_85_driver',
                              executable='robotiq_85_driver',
                              name='robotiq_85_driver',
-                             parameters=[{"num_grippers": 1}, {"comport": "/dev/ttyUSB0"}, {"baud": "115200"}],
-                             output='screen',)
+                             parameters=[{"num_grippers": 1}, {"comport": "/tmp/ttyUR"}, {"baud": "115200"}],
+                             output='screen',
+                             respawn=True,
+                             )
 
     return LaunchDescription([griperdriver_node])
